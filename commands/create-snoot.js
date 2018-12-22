@@ -128,7 +128,11 @@ module.exports = async function createSnoot () {
 			})
 	}
 
-	await fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
+	let snootWebsitePath = snoots.chrootResolver(snoot, "website").path
+
+	if (!await fs.pathExists(snootWebsitePath)) {
+		await fs.mkdirp(snootWebsitePath)
+	}
 
 	log("adding their authorized_keys ➕🔑 file so they can log in (:")
 	await snoots.createChrootSshConfiguration(snoot, {authorizedKeys})
