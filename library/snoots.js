@@ -49,6 +49,8 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 		await fs.chmod(path, 0o755)
 	}
 
+	await fs.chmod(authorizedKeysPath, 0o644)
+
 	for (let path of snootOwnedPaths) {
 		await fs.chown(path, snootId, commonId)
 	}
