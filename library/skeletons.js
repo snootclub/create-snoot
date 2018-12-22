@@ -253,11 +253,12 @@ exports.write = async function write (options) {
 			await fs.chmod(filePath, 0o664)
 		} else {
 			let files = value
+			await fs.mkdirp(filePath)
+			await fs.chmod(filePath, 0o755)
 			await write(merge(options, {
 				resolver: fileResolver,
 				files
 			}))
-			await fs.chmod(filePath, 0o755)
 		}
 
 		await fs.chown(
