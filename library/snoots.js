@@ -111,9 +111,9 @@ function getConfigPath (snoot) {
 
 async function getNames () {
 	let files = await fs.readdir(resolver.path)
-	return files.filter(name => {
+	return files.filter(name =>
 		validateName(name) && fs.pathExistsSync(getConfigPath(name))
-	})
+	)
 }
 
 async function each (fn) {
