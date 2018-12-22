@@ -31,29 +31,20 @@ exports.checkUserExists = async function checkUserExists (snoot) {
 	return unix.getUserId(snoot) != null
 }
 
-let createOptionString = options =>
-	Object.values(options).reduce((string, name, value) => {
-		let key = name.length > 1
-			? `--${name}`
-			: `-${name}`
-		return string.concat(`${key} ${value}`)
-	}, "")
-
-	unix.createUser = function createUser ({
+exports.createUser = function createUser ({
 		user,
 		homeDirectory,
 		groups
 	}) {
 		return shell.run([
 			"useradd -m",
-			createOptionString({
-				d: homeDirectory,
-				g: groups[0],
-				G: groups.join(","),
-				s: "/bin/no-login"
-			}),
+			"-d", homeDirectory,
+			"-g", groups[0],
+			"-G", groups,
+			"-s /bin/no-login",
 			user
 		], {sudo: true})
+		.then(code => code && Promise.reject())
 }
 
 exports.chmod = async function chmod ({mode, path, recurse = true}) {
