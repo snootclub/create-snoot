@@ -235,8 +235,8 @@ exports.write = async function write (options) {
 		resolver,
 		render,
 		files = exports.files,
-		uid = 1000,
-		gid = 1473
+		uid,
+		gid
 	} = options
 
 	for (let [key, value] of Object.entries(files)) {
