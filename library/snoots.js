@@ -152,7 +152,7 @@ async function getConfig (snoot) {
 		return Promise.reject(`can't get config for ${snoot}, no snoot.json`)
 	}
 
-	return fs.readFile(configPath)
+	return fs.readJson(configPath)
 }
 
 async function getPorts (snoot) {
