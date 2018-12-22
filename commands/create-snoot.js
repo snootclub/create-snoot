@@ -123,7 +123,7 @@ module.exports = async function createSnoot () {
 			.createUnixAccount(snoot)
 			.catch(error => {
 				shout("couldnt create user!")
-				shout(error.toString())
+				shout(error)
 				warn("creating them a directory 📂 📁 in /snoots as a backup 🦴")
 			})
 	}

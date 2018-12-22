@@ -36,15 +36,17 @@ exports.createUser = function createUser ({
 		homeDirectory,
 		groups
 	}) {
-		return shell.run([
+		let command = [
 			"useradd -m",
 			"-d", homeDirectory,
 			"-g", groups[0],
-			"-G", groups,
+			"-G", groups.join(","),
 			"-s /bin/no-login",
 			user
-		], {sudo: true})
-		.then(code => code && Promise.reject())
+		].join(" ")
+
+		shell.run(command, {sudo: true})
+			.then(code => code && Promise.reject(command))
 }
 
 exports.chmod = async function chmod ({mode, path, recurse = true}) {
