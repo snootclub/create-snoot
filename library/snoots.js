@@ -25,9 +25,10 @@ let websiteResolver = (snoot, ...paths) =>
 async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 	let snootChrootResolver = chrootResolver(snoot)
 	let sshDirectoryResolver = snootChrootResolver(".ssh")
+	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
 
 	await fs.outputFile(
-		sshDirectoryResolver("authorized_keys").path,
+		authorizedKeysPath,
 		authorizedKeys
 	)
 
@@ -39,8 +40,14 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 
 	for (let directoryPath of paths) {
 		await fs.chmod(directoryPath, 0o700)
-		await fs.chown(directoryPath, 0, 0)
 	}
+
+	await fs.chown(chrootResolver.path, 0, 0)
+	let snootId = unix.getUserId(snoot) || 1000
+
+	await fs.chmod(authorizedKeysPath, 0o600)
+	await fs.chown(snootChrootResolver.path, snootId, 0)
+	await fs.chown(sshDirectoryResolver.path, snootId, 0)
 }
 
 async function createUnixAccount (snoot) {
