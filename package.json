@@ -1,0 +1,26 @@
+{
+  "name": "@snootclub/create-snoot",
+  "version": "0.0.0",
+  "description": "snoot club",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "chee <chee@snoot.club>",
+  "license": "GPL-3.0+",
+  "dependencies": {
+    "chalk": "^2.4.1",
+    "chmodr": "^1.2.0",
+    "fs-extra": "^7.0.1",
+    "get-stream": "^4.1.0",
+    "inquirer": "^6.2.1",
+    "make-fetch-happen": "^4.0.1",
+    "sudo": "^1.0.3",
+    "yargs": "^12.0.5"
+  },
+  "devDependencies": {},
+  "bin": {
+    "snoot": "./index.js",
+    "create-snoot": "./commands/create-snoot.js"
+  }
+}
