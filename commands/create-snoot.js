@@ -11,12 +11,12 @@ let filterDuplicateLines = string => [
 ].join("\n")
 
 process.on("unhandledRejection", error => {
-	console.log(error)
+	console.error(error)
 	process.exit(122)
 })
 
 process.on("uncaughtException", error => {
-	console.log(error)
+	console.error(error)
 	process.exit(222)
 })
 
