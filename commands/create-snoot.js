@@ -137,9 +137,6 @@ module.exports = async function createSnoot () {
 		webPort
 	})
 
-	log("updating next snoot port 🌸")
-	await snoots.setNextPort(webPort + 1)
-
 	log("binding snoots 👀")
 	await snoots.bind(snoot)
 
@@ -148,6 +145,9 @@ module.exports = async function createSnoot () {
 
 	log("restarting nginx 🔂")
 	await shell.run("nginx -s reload")
+
+	log("updating next snoot port 🌸")
+	await snoots.setNextPort(webPort + 1)
 }
 
 let beingRunDirectly = process.argv[1].endsWith("create-snoot.js")
