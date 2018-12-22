@@ -42,7 +42,6 @@ module.exports = async function createSnoot () {
 			type: "input",
 			name: "snoot",
 			message: "oh, a new snoot? 💕 \nwhat's their name?",
-			default: "abe",
 			validate: snoots.validateName
 		},
 		{
@@ -61,7 +60,7 @@ module.exports = async function createSnoot () {
 		name: "shouldContinue",
 		message: "🎺 whümf and wetch? this snoot already exists, should we continue?",
 		when: () => snootAlreadyExists,
-		default: true
+		default: false
 	})
 
 	if (!shouldContinue) {
@@ -91,7 +90,6 @@ module.exports = async function createSnoot () {
 			type: "input",
 			name: "githubUsername",
 			message: "what is their github username? 🐙😻",
-			default: "chee",
 			// when: ({getGithubKeys}) => getGithubKeys
 		}
 	])
