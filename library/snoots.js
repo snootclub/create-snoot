@@ -42,8 +42,8 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 		authorizedKeysPath
 	]
 
-	let snootId = unix.getUserId() || 1000
-	let commonId = unix.getCommonGid() || 1473
+	let snootId = await unix.getUserId(snoot)
+	let commonId = await unix.getCommonGid()
 
 	for (let path of [...rootOwnedPaths, ...snootOwnedPaths]) {
 		await fs.chmod(path, 0o755)
