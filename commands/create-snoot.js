@@ -5,6 +5,7 @@ let unix = require("../library/unix.js")
 let snoots = require("../library/snoots.js")
 let shell = require("../library/shell.js")
 let fetch = require("../library/fetch.js")
+let fs = require("fs-extra")
 
 let filterDuplicateLines = string => [
 	...new Set(string.split("\n"))
