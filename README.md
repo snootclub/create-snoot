@@ -1,6 +1,7 @@
-# Create snoot - the snoot maintenance module
+# Create snoot
+## the snoot maintenance module
 
-This is the module used on the [snoot.club](https://snoot.club) server for creating new snoots. 
+This is the module used on the [snoot.club](https://snoot.club) server for creating and working with snoots. 
 
 It's specific to the setup of that server and would need changes in order to be useful to anyone else, but the code is here should anyone ever want to look at it or reuse any of the code.
 
