@@ -39,30 +39,21 @@ let createOptionString = options =>
 		return string.concat(`${key} ${value}`)
 	}, "")
 
-	unix.createUser = async function createUser ({
+	unix.createUser = function createUser ({
 		user,
 		homeDirectory,
 		groups
 	}) {
-		let promise = shell.run(
-			[
-				"useradd -m",
-				createOptionString({
-					d: homeDirectory,
-					g: groups[0],
-					G: groups.join(","),
-					s: "/bin/no-login"
-				}),
-				user
-			],
-			{sudo: true}
-		)
-
-		let code = await promise
-
-		return code
-			? Promise.reject(promise.stderr)
-			: promise.stdout
+		return shell.run([
+			"useradd -m",
+			createOptionString({
+				d: homeDirectory,
+				g: groups[0],
+				G: groups.join(","),
+				s: "/bin/no-login"
+			}),
+			user
+		], {sudo: true})
 }
 
 exports.chmod = async function chmod ({mode, path, recurse = true}) {
