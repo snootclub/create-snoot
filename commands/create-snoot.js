@@ -1,12 +1,14 @@
 #!/usr/bin/env -S sudo node
 let inquirer = require("inquirer")
-let fetch = require("make-fetch-happen").defaults({
-	cacheManager: "./.snootclub/fetch-cache"
-})
 let {log, warn, shout} = require("../library/loggo.js")
 let unix = require("../library/unix.js")
 let snoots = require("../library/snoots.js")
 let shell = require("../library/shell.js")
+let fetch = require("../library/fetch.js")
+
+let filterDuplicateLines = string => [
+	...new Set(string.split("\n"))
+].join("\n")
 
 process.on("unhandledRejection", error => {
 	console.log(error)
@@ -68,29 +70,34 @@ module.exports = async function createSnoot () {
 		process.exit(2)
 	}
 
-	// let existingKeys = snootAlreadyExists && (
-	// 	(await snoots.getConfig(snoot)).authorizedKeys
-	// )
+	let existingKeys = snootAlreadyExists && (
+		(await snoots.getConfig(snoot)).authorizedKeys
+	)
 
 	let {
+		useExistingKeys,
 		githubUsername
 	} = await inquirer.prompt([
-		// {
-		// 	type: "confirm",
-		// 	name: useExistingKeys,
-		// 	message: "do you want to use the existing authorized_keys file they had?",
-		// 	when: () => existingKeys
-		// },
-		// {
-		// 	type: "confirm",
-		// 	name: getGithubKeys,
-		// 	message: "do you want to get keys from github?"
-		// },
+		{
+			type: "confirm",
+			name: "useExistingKeys",
+			message: "do you want to use the existing authorized_keys file they had?",
+			when: () => existingKeys
+		},
+		{
+			type: "confirm",
+			name: "shouldGetGithubKeys",
+			message: "do you want to get fresh keys from github?",
+			when: ({existingKeys}) => existingKeys
+		},
 		{
 			type: "input",
 			name: "githubUsername",
-			message: "what is their github username? 🐙😻",
-			// when: ({getGithubKeys}) => getGithubKeys
+			message: "           🐙     😻\nwhat is their github username?",
+			when: ({existingKeys, shouldGetGithubKeys}) =>
+				existingKeys
+					? shouldGetGithubKeys
+					: true
 		}
 	])
 
@@ -104,12 +111,13 @@ module.exports = async function createSnoot () {
 		type: "editor",
 		name: "authorizedKeys",
 		message: "edit their authorized_keys ✏️🔑",
-		default: githubKeys
-		// .concat(useExistingKeys ? existingKeys : "")
+		default: filterDuplicateLines(githubKeys
+			.concat(existingKeys || ""))
 	})
 
 	if (await unix.checkUserExists(snoot)) {
-		warn(`there's already a user called "${snoot}"!! i hope that's ok! ♥`)
+		warn(`there's already a user called "${snoot}"!! i hope that's ok!️︎ ♥️`)
+		await fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
 	} else {
 		log("ok! creating them a unix user 👤 account on the computer 🖥 ⌨️ 🖱")
 		await snoots
@@ -118,7 +126,7 @@ module.exports = async function createSnoot () {
 				shout("couldnt create user!")
 				shout(error.toString())
 				warn("creating them a directory 📂 📁 in /snoots as a backup 🦴")
-				return unix.mkdir(snoots.chrootResolver(snoot).path)
+				return fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
 			})
 	}
 
