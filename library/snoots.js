@@ -7,7 +7,7 @@ let {warn} = require("./loggo.js")
 let getStream = require("get-stream")
 let chmodr = require("chmodr")
 
-let directory = "snoots"
+let directory = "/www/snoot.club/snoots"
 let chrootDirectory = "/snoots"
 
 let resolver = createResolver(directory)
