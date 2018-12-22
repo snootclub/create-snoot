@@ -77,8 +77,8 @@ async function createBaseApplication (snoot, options = {}) {
 
 	await skeletons.write({
 		resolver: resolver(snoot),
-		uid: unix.getUserId(snoot),
-		gid: unix.getCommonGid(),
+		uid: await unix.getUserId(snoot),
+		gid: await unix.getCommonGid(),
 		render: compile => compile({
 			snoot,
 			snootRoot: resolver.path,

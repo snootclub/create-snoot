@@ -1,5 +1,6 @@
 let shell = require("./shell.js")
 let fs = require("fs-extra")
+let userid = require("userid")
 
 let unix = exports
 
@@ -26,7 +27,7 @@ exports.getCommonGid = () => {
 }
 
 exports.checkUserExists = async function checkUserExists (snoot) {
-	return unix.getUserId(snoot) != null
+	return await unix.getUserId(snoot) != null
 }
 
 exports.createUser = function createUser ({
