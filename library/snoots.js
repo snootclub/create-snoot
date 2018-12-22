@@ -3,7 +3,7 @@ let createResolver = require("./create-path-resolver.js")
 let unix = require("./unix.js")
 let shell = require("./shell.js")
 let skeletons = require("./skeletons.js")
-let {warn} = require("./loggo.js")
+let {warn, shout} = require("./loggo.js")
 let getStream = require("get-stream")
 let chmodr = require("chmodr")
 
@@ -177,6 +177,15 @@ async function getPorts (snoot) {
 	}
 }
 
+async function demandExistence (snoot) {
+	let names = await getNames()
+	
+	if (!names.includes(snoot)) {
+		shout(`no such snoot: ${snoot}`)
+		process.exit(47)
+	}
+}
+
 module.exports = {
 	directory,
 	chrootDirectory,
@@ -196,5 +205,6 @@ module.exports = {
 	validateName,
 	getNames,
 	getConfig,
-	getPorts
+	getPorts,
+	demandExistence
 }
