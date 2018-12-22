@@ -11,5 +11,5 @@ module.exports = async ({snoot, key}) => {
     process.exit(18)
   }
 
-  return config[key]
+  console.log(config[key])
 }
