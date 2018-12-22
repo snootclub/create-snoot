@@ -1,5 +1,4 @@
 let shell = require("./shell.js")
-let userid = require("userid")
 let fs = require("fs-extra")
 
 let unix = exports
@@ -12,11 +11,10 @@ exports.checkYourPrivilege = function () {
 }
 
 exports.getUserId = snoot => {
-	try {
-		return userid.uid(snoot)
-	} catch (error) {
-		return undefined
-	}
+	let child = shell.run(`id -u ${snoot}`)
+	let id = []
+	child.stdout.on("data", data => id.push(data))
+	return child.then(code => code ? undefined : +Buffer.concat(id).toString("utf-8").trim())
 }
 
 exports.getCommonGid = () => {
