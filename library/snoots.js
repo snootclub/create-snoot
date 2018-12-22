@@ -48,7 +48,7 @@ async function createUnixAccount (snoot) {
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
 		homeDirectory: chrootResolver(snoot).path
-	}).catch(getStream)
+	})
 }
 
 async function createBaseApplication (snoot, options = {}) {
