@@ -76,7 +76,6 @@ module.exports = async function createSnoot () {
 	)
 
 	let {
-		useExistingKeys,
 		githubUsername
 	} = await inquirer.prompt([
 		{
