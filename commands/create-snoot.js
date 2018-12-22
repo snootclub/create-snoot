@@ -131,16 +131,14 @@ module.exports = async function createSnoot () {
 		webPort
 	} = await snoots.getPorts(snoot)
 
-	if (!snootAlreadyExists) {
-		await snoots.createBaseApplication(snoot, {
-			authorizedKeys,
-			sshPort,
-			webPort
-		})
+	await snoots.createBaseApplication(snoot, {
+		authorizedKeys,
+		sshPort,
+		webPort
+	})
 
-		log("updating next snoot port 🌸")
-		await snoots.setNextPort(webPort + 1)
-	}
+	log("updating next snoot port 🌸")
+	await snoots.setNextPort(webPort + 1)
 
 	log("binding snoots 👀")
 	await snoots.bind(snoot)
