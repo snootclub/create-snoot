@@ -1,5 +1,6 @@
 let shell = require("./shell.js")
 let userid = require("userid")
+let fs = require("fs-extra")
 
 let unix = exports
 
@@ -90,8 +91,10 @@ exports.unmount = directory =>
 		{sudo: true}
 	)
 
-exports.bind = (boy, bedposts) =>
-	shell.run(
+exports.bind = async (boy, bedposts) => {
+	await fs.mkdirp(bedposts)
+	return shell.run(
 		`mount --bind ${boy} ${bedposts}`,
 		{sudo: true}
 	).then(code => code && Promise.reject("couldnt bind"))
+}
