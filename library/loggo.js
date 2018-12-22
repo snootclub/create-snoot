@@ -27,7 +27,7 @@ let colors = {
 
 Object.entries(colors).forEach(([level, colors]) => {
 	exports[level] = message => (
-		console.log(chalk.hex(random(colors)).bold(message)),
+		console.info(chalk.hex(random(colors)).bold(message)),
 		message
 	)
 })
