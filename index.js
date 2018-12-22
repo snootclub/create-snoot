@@ -2,7 +2,10 @@
 let yargs = require("yargs")
 let createSnoot = require("./commands/create-snoot.js")
 let enterSnoot = require("./commands/enter-snoot.js")
+let startSnoot = require("./commands/start-snoot.js")
 let stopSnoot = require("./commands/stop-snoot.js")
+
+let each = require("./commands/each.js")
 let get = require("./commands/get.js")
 
 let positionalSnoot = yargs =>
@@ -24,6 +27,22 @@ let arguments = yargs
 				describe: "the key for the data you'd like to see"
 			})
 	}, get)
+	.command(
+		"each <command>",
+		"run a command in each snoot",
+		yargs => yargs.positional(
+			"command", {
+				describe: "the command to run. the env variable SNOOT_NAME will be set with snoot's name"
+			}
+		),
+		each
+	)
+	.command(
+		"start <snoot>",
+		"start a snoot's container",
+		positionalSnoot,
+		startSnoot
+	)
 	.command(
 		"stop <snoot>",
 		"stop a snoot's container",
