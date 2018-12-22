@@ -74,7 +74,7 @@ function bootContainer (snoot) {
 	result.stdout.pipe(process.stdout)
 
 	return result.then(code => (
-		code && warn("couldn't boot the snoot!"),
+		code && warn(`couldn't boot the snoot! (${snoot})`),
 		result.stderr.pipe(process.stderr),
 		code
 	))
@@ -118,7 +118,7 @@ async function bind () {
 		await fs.pathExists(websitePath) &&
 			await unix.bind(websitePath, chrootWebsitePath)
 				.catch(({code}) => {
-					warn("couldn't bind snoot, maybe not supported on os?")
+					warn(`couldn't bind snoot called "${snoot}", maybe not supported on os?`)
 				})
 	})
 }
