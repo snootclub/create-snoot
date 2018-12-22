@@ -2,12 +2,14 @@ let fs = require("fs-extra")
 let os = require("os")
 
 exports.files = {
-	"snoot.json" ({snoot, webPort, sshPort, authorizedKeys}) {
+	logs: {},
+	"snoot.json" ({snoot, githubUsername, webPort, sshPort, authorizedKeys}) {
 		return JSON.stringify({
 			snoot,
 			webPort,
 			sshPort,
-			authorizedKeys
+			authorizedKeys,
+			githubUsername
 		}, null, "\t") + os.EOL
 	},
 	"nginx.conf" ({snoot, webPort}) {
@@ -218,13 +220,50 @@ Host snoot
 	}
 }
 
-exports.write = async (directoryResolver, render, files = exports.files) => {
+let fileTypes = {
+	directory: Symbol("directory"),
+	file: Symbol("file")
+}
+
+exports.fileTypes = fileTypes
+
+let merge = (a, b) =>
+	Object.assign({}, a, b)
+
+exports.write = async function write (options) {
+	let {
+		resolver,
+		render,
+		files = exports.files,
+		uid = 1000,
+		gid = 1473
+	} = options
+
 	for (let [key, value] of Object.entries(files)) {
-		let resolver = directoryResolver(key)
-		if (typeof value == "function") {
-			await fs.outputFile(resolver.path, render(value))
+		let fileResolver = resolver(key)
+		let fileType = typeof value == "function"
+			? fileTypes.file
+			: fileTypes.directory
+
+		let filePath = fileResolver.path
+
+		if (fileType == fileTypes.file) {
+			let fileCreator = value
+			await fs.outputFile(filePath, render(fileCreator))
+			await fs.chmod(filePath, 0o664)
 		} else {
-			await exports.write(resolver, render, value)
+			let files = value
+			await write(merge(options, {
+				resolver: fileResolver,
+				files
+			}))
+			await fs.chmod(filePath, 0o755)
 		}
+
+		await fs.chown(
+			filePath,
+			uid,
+			gid
+		)
 	}
 }
