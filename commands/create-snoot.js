@@ -118,7 +118,6 @@ module.exports = async function createSnoot () {
 
 	if (await unix.checkUserExists(snoot)) {
 		warn(`there's already a user called "${snoot}"!! i hope that's ok!️︎ ♥️`)
-		await fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
 	} else {
 		log("ok! creating them a unix user 👤 account on the computer 🖥 ⌨️ 🖱")
 		await snoots
@@ -127,9 +126,10 @@ module.exports = async function createSnoot () {
 				shout("couldnt create user!")
 				shout(error.toString())
 				warn("creating them a directory 📂 📁 in /snoots as a backup 🦴")
-				return fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
 			})
 	}
+
+	await fs.mkdirp(snoots.chrootResolver(snoot, "website").path)
 
 	log("adding their authorized_keys ➕🔑 file so they can log in (:")
 	await snoots.createChrootSshConfiguration(snoot, {authorizedKeys})
