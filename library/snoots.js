@@ -117,7 +117,7 @@ async function bind () {
 		await unix.unmount(chrootWebsitePath).catch(_ => _)
 		await fs.pathExists(websitePath) &&
 			await unix.bind(websitePath, chrootWebsitePath)
-				.catch(({code}) => {
+				.catch(() => {
 					warn(`couldn't bind snoot called "${snoot}", maybe not supported on os?`)
 				})
 	})

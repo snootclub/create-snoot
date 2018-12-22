@@ -147,7 +147,7 @@ module.exports = async function createSnoot () {
 	})
 
 	log("binding snoots 👀")
-	await snoots.bind(snoot)
+	await snoots.bind()
 
 	log("booting snoot container 👢")
 	await snoots.bootContainer(snoot)
