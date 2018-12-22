@@ -111,6 +111,7 @@ module.exports = async (request, response) =>
 			return `#!/bin/sh
 apt update
 apt install -y vim-tiny mg openssh-server
+mkdir /run/sshd
 /usr/sbin/sshd
 mkdir -p /root/.ssh
 mv /application/authorized_keys /root/.ssh/authorized_keys
