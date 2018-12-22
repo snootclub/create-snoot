@@ -1,17 +1,23 @@
 let sudoSpawn = require("sudo")
-let spawn = require("child_process").spawn
+let {
+	spawn
+} = require("child_process")
 
 exports.run = function run (command, options = {}) {
 	let {
 		sudoPrompt = "could i get your password for sudo pls?",
 		sudo = false,
 		cwd,
-		env
+		env,
+		takeover = false,
+		stdio
 	} = options
 
 	let spawnOptions = {
+		shell: takeover,
 		cwd,
-		env
+		env: env ? Object.assign({}, process.env, env) : process.env,
+		stdio: stdio || takeover ? [0, 1, 2] : undefined
 	}
 
 	let sudoSpawnOptions = {
