@@ -7,6 +7,9 @@ let stopSnoot = require("./commands/stop-snoot.js")
 
 let each = require("./commands/each.js")
 let get = require("./commands/get.js")
+let ls = require("./commands/ls.js")
+
+let noop = Function.prototype
 
 let positionalSnoot = yargs =>
 	yargs.positional("snoot", {
@@ -14,7 +17,8 @@ let positionalSnoot = yargs =>
 	})
 
 let arguments = yargs
-	.command(["create", "new"], "create a new snoot", () => {}, createSnoot)
+	.command(["create", "new"], "create a new snoot", noop, createSnoot)
+	.command("ls", "list snoots", noop, ls)
 	.command(
 		"enter <snoot>",
 		"enter a snoot's container",
