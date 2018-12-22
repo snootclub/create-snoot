@@ -1,3 +1,4 @@
+let path = require("path")
 let fs = require("fs-extra")
 let createResolver = require("./create-path-resolver.js")
 let unix = require("./unix.js")
@@ -5,13 +6,10 @@ let shell = require("./shell.js")
 let skeletons = require("./skeletons.js")
 let {warn, shout} = require("./loggo.js")
 let getStream = require("get-stream")
-let chmodr = require("chmodr")
 
-let directory = "/www/snoot.club/snoots"
-let chrootDirectory = "/snoots"
-
-let resolver = createResolver(directory)
-let chrootResolver = createResolver(chrootDirectory)
+let rootResolver = createResolver("/www/snoot.club")
+let resolver = rootResolver("snoots")
+let chrootResolver = createResolver("/snoots")
 
 let validNameRegex = /^[a-z][a-z0-9]{0,30}$/
 
@@ -25,7 +23,7 @@ let websiteResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", "website", ...paths)
 
 async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
-	let sshDirectoryResolver = resolver(snoot, ".ssh")
+	let sshDirectoryResolver = chrootResolver(snoot, ".ssh")
 
 	await fs.outputFile(
 		sshDirectoryResolver("authorized_keys").path,
@@ -39,8 +37,8 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 async function createUnixAccount (snoot) {
 	return unix.createUser({
 		user: snoot,
-		groups: ["common", "undercommon"],
-		homeDirectory: chrootResolver("snoot").path
+		groups: [unix.commonGroupName, unix.lowerGroupName],
+		homeDirectory: chrootResolver(snoot).path
 	}).catch(getStream)
 }
 
@@ -51,32 +49,21 @@ async function createBaseApplication (snoot, options = {}) {
 		webPort = 22333
 	} = options
 
-	await skeletons.write(
-		resolver(snoot),
-		render => render({
+	await skeletons.write({
+		resolver: resolver(snoot),
+		uid: unix.getUserId(snoot),
+		gid: unix.getCommonGid(),
+		render: compile => compile({
 			snoot,
 			snootRoot: resolver.path,
 			authorizedKeys,
 			sshPort,
 			webPort
 		})
-	)
-
-		// HACK oh no could i put these in the definition somewhere?
-	await (new Promise((resolve, reject) => {
-		chmodr(
-			applicationResolver(snoot).path,
-			0o777,
-			error => error ? reject(error) : resolve()
-		)
-	}))
-
-	await unix.chown({
-		path: websiteResolver(snoot).path,
-		recurse: true,
-		user: snoot,
-		group: "common"
 	})
+
+	// HACK oh no could i put this in the definition somewhere?
+	await fs.chmod(applicationResolver(snoot, ".start.sh").path, 0o775)
 }
 
 function bootContainer (snoot) {
@@ -187,8 +174,7 @@ async function demandExistence (snoot) {
 }
 
 module.exports = {
-	directory,
-	chrootDirectory,
+	rootResolver,
 	resolver,
 	chrootResolver,
 	applicationResolver,
