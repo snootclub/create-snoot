@@ -18,7 +18,7 @@ let positionalSnoot = yargs =>
 
 let arguments = yargs
 	.command(["create", "new"], "create a new snoot", noop, createSnoot)
-	.command("ls", "list snoots", noop, ls)
+	.command(["ls", "list"], "list snoots", noop, ls)
 	.command(
 		"enter <snoot>",
 		"enter a snoot's container",
