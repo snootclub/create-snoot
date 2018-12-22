@@ -1,26 +1,33 @@
 let shell = require("./shell.js")
+let userid = require("userid")
 
 let unix = exports
+
+exports.commonGroupName = "common"
+exports.lowerGroupName = "undercommon"
 
 exports.checkYourPrivilege = function () {
 	return process.getuid() === 0
 }
 
-exports.getUserId = function getUserId (snoot) {
-	let result = shell.run(`id -u ${snoot}`)
-	let buffergoo = []
-	result.stdout.on("data", data => buffergoo.push(data))
+exports.getUserId = snoot => {
+	try {
+		return userid.uid(snoot)
+	} catch (error) {
+		return undefined
+	}
+}
 
-	return shell.run(`id -u ${snoot}`)
-		.then(code =>
-			code
-				? null
-				: Promise.resolve(Buffer.concat(buffergoo))
-		)
+exports.getCommonGid = () => {
+	try {
+		return userid.gid(unix.commonGroupName)
+	} catch (error) {
+		return undefined
+	}
 }
 
 exports.checkUserExists = async function checkUserExists (snoot) {
-	return !(await unix.getUserId(snoot) == null)
+	return unix.getUserId(snoot) != null
 }
 
 let createOptionString = options =>
@@ -57,15 +64,6 @@ let createOptionString = options =>
 			: promise.stdout
 }
 
-exports.chown = async function chown ({path, user, group = user, recurse = true}) {
-	let r = recurse ? "-R" : ""
-
-	return shell.run(
-		`chown ${r} ${user}.${group} ${path}`,
-		{sudo: true}
-	)
-}
-
 exports.chmod = async function chmod ({mode, path, recurse = true}) {
 	let r = recurse ? "-R" : ""
 
@@ -79,8 +77,6 @@ exports.mkdir = async function mkdir ({path, createParents = true, sudo = true})
 	let p = createParents
 		? "-p"
 		: ""
-
-	console.log({path})
 
 	return shell.run(
 		`mkdir ${p} ${path}`,
