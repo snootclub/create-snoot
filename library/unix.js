@@ -12,10 +12,11 @@ exports.checkYourPrivilege = function () {
 }
 
 exports.getUserId = snoot => {
-	let child = shell.run(`id -u ${snoot}`)
-	let id = []
-	child.stdout.on("data", data => id.push(data))
-	return child.then(code => code ? undefined : +Buffer.concat(id).toString("utf-8").trim())
+	try {
+		return userid.uid(snoot)
+	} catch (error) {
+		return undefined
+	}
 }
 
 exports.getCommonGid = () => {
@@ -30,7 +31,7 @@ exports.checkUserExists = async function checkUserExists (snoot) {
 	return await unix.getUserId(snoot) != null
 }
 
-exports.createUser = function createUser ({
+exports.createUser = async function createUser ({
 		user,
 		homeDirectory,
 		groups
@@ -44,7 +45,7 @@ exports.createUser = function createUser ({
 			user
 		].join(" ")
 
-		shell.run(command, {sudo: true})
+		return shell.run(command, {sudo: true})
 			.then(code => code && Promise.reject(command))
 }
 

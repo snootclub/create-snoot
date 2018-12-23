@@ -1,4 +1,3 @@
-let path = require("path")
 let fs = require("fs-extra")
 let createResolver = require("./create-path-resolver.js")
 let unix = require("./unix.js")
