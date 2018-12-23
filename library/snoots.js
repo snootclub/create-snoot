@@ -5,7 +5,6 @@ let unix = require("./unix.js")
 let shell = require("./shell.js")
 let skeletons = require("./skeletons.js")
 let {warn, shout} = require("./loggo.js")
-let getStream = require("get-stream")
 
 let rootResolver = createResolver("/www/snoot.club")
 let resolver = rootResolver("snoots")
@@ -61,7 +60,7 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 }
 
 async function createUnixAccount (snoot) {
-	return unix.createUser({
+	return await unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
 		homeDirectory: chrootResolver(snoot).path
