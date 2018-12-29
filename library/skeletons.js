@@ -257,7 +257,7 @@ exports.write = async function write (options) {
 				let {shouldContinue} = await inquirer.prompt({
 					type: "confirm",
 					name: "shouldContinue",
-					message: `🎺 whümf and wetch? "${file}" already exists, should we overwrite?`,
+					message: `🎺 whümf and wetch? "${filePath}" already exists, should we overwrite?`,
 					default: false
 				})
 
