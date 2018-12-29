@@ -167,17 +167,34 @@ tail -f /dev/null
 
 <ul>
 	<li>
-		ssh into the application container
+		<h2>sftp into the snoot.club server</h2>
+		<p>
+			this is if you only want to set up static files. anything
+			you drop in the website/ folder will be available publicly at ${snoot}.snoot.club
+		</p>
+		<h3>info:</h3>
 		<ul>
-			<li><code>ssh root@snoot.club -p ${sshPort}</code></li>
-			<li>this file is <code>/application/website/index.html</code>.</li>
+			<li><code>sftp ${snoot}@snoot.club</code></li>
+			<li>
+				the page you are reading right now is the file located at
+				<code>./website/index.html</code>
+			</li>
 		</ul>
 	</li>
 	<li>
-		sftp into the website directory
+		<h2>ssh into the ${snoot}.snoot.club container</h2>
+		<p>
+			this allows you to edit the whole application. you're a full
+			administrator and anything you set up to listen on port 80
+			will be available at this address.
+		</p>
+		<h3>info:</h3>
 		<ul>
-			<li><code>sftp ${snoot}@snoot.club</code></li>
-			<li>this file is <code>./website/index.html</code></li>
+			<li><code>ssh root@snoot.club -p ${sshPort}</code></li>
+			<li>
+				the page you are reading right now is the file located at
+				<code>/application/website/index.html</code>.
+			</li>
 		</ul>
 	</li>
 </ul>
