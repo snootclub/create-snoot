@@ -1,5 +1,6 @@
 let fs = require("fs-extra")
 let os = require("os")
+let inquirer = require("inquirer")
 
 exports.files = {
 	logs: {},
@@ -248,8 +249,21 @@ exports.write = async function write (options) {
 
 		let filePath = fileResolver.path
 
+		out:
 		if (fileType == fileTypes.file) {
 			let fileCreator = value
+			if (await fs.pathExists(filePath)) {
+				let {shouldContinue} = await inquirer.prompt({
+					type: "confirm",
+					name: "shouldContinue",
+					message: `🎺 whümf and wetch? "${file}" already exists, should we overwrite?`,
+					default: false
+				})
+
+				if (!shouldContinue) {
+					break out
+				}
+			}
 			await fs.outputFile(filePath, render(fileCreator))
 			await fs.chmod(filePath, 0o664)
 		} else {
