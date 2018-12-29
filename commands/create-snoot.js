@@ -162,7 +162,7 @@ module.exports = async function createSnoot () {
 	await snoots.setNextPort(webPort + 1)
 }
 
-let beingRunDirectly = process.argv[1].endsWith("create-snoot.js")
+let beingRunDirectly = process.argv[1].match(/create-snoot($|\.js$)/)
 
 if (beingRunDirectly) {
 	module.exports()
