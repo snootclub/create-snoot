@@ -49,7 +49,7 @@ server {
 		return `version: "3"
 services:
   snoot:
-    image: "node:latest"
+    image: "snootclub/snoot:flower"
     working_dir: /application
     environment:
       - NODE_ENV=production
@@ -64,6 +64,16 @@ services:
 	},
 	application: {
 		boops: {},
+		"ecosystem.config.js" () {
+			return `module.exports = {
+	apps : [{
+		name: "snoot",
+		script: "npm start",
+		watch: true
+	}]
+}
+`
+		},
 		"package.json" ({snoot}) {
 			return `{
 	"name": "${snoot}-application",
@@ -79,7 +89,7 @@ services:
 	"license": "GPL-3.0+",
 	"description": "${snoot} application on snoot.club",
 	"dependencies": {
-		"@snootclub/boop": "0.0.0",
+		"@snootclub/boop": "^0.0.1",
 		"micro": "^9.3.3"
 	}
 }
@@ -94,17 +104,10 @@ module.exports = (request, response) =>
 		},
 		".start.sh" () {
 			return `#!/bin/sh
-apt update
-apt install -y vim-tiny mg openssh-server
-mkdir /run/sshd
-/usr/sbin/sshd
-mkdir -p /root/.ssh
 mv /application/authorized_keys /root/.ssh/authorized_keys
-chown -R root.root /root/.ssh
-chmod 700 -R /root/.ssh
 cd /application
 npm install
-npm i -g pm2
+npm run-script build
 pm2 start ecosystem.config.js
 tail -f /dev/null
 `
@@ -173,7 +176,6 @@ tail -f /dev/null
 			this is if you only want to set up static files. anything
 			you drop in the website/ folder will be available publicly at ${snoot}.snoot.club
 		</p>
-		<h3>info:</h3>
 		<ul>
 			<li><code>sftp ${snoot}@snoot.club</code></li>
 			<li>
@@ -189,7 +191,6 @@ tail -f /dev/null
 			administrator and anything you set up to listen on port 80
 			will be available at this address.
 		</p>
-		<h3>info:</h3>
 		<ul>
 			<li><code>ssh root@snoot.club -p ${sshPort}</code></li>
 			<li>
