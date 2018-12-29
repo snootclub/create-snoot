@@ -62,49 +62,33 @@ services:
 `
 	},
 	application: {
+		boops: {},
 		"package.json" ({snoot}) {
 			return `{
 	"name": "${snoot}-application",
 	"version": "1.0.0",
 	"main": "index.js",
 	"scripts": {
-		"start": "micro -l tcp://0.0.0.0:\${SNOOT_MICRO_PORT-80}",
-		"test": "micro-dev -l tcp://0.0.0.0:\${SNOOT_MICRO_PORT-80}"
+		"install": "boop",
+		"watch": "boop",
+		"build": "boop",
+		"start": "micro -l tcp://0.0.0.0:\${SNOOT_MICRO_PORT-80}"
 	},
 	"author": "${snoot} <${snoot}@snoot.club>",
 	"license": "GPL-3.0+",
 	"description": "${snoot} application on snoot.club",
 	"dependencies": {
-		"micro": "^9.3.3",
-		"serve-handler": "^5.0.7"
-	},
-	"devDependencies": {
-		"micro-dev": "^3.0.0"
+		"@snootclub/boop": "0.0.0",
+		"micro": "^9.3.3"
 	}
 }
 `
 		},
 		"index.js" () {
-			return `const serve = require("serve-handler")
+			return `let boop = require("@snootclub/boop")
 
-const serveOptions = {
-	public: "website",
-	cleanUrls: true,
-	renderSingle: true
-}
-
-module.exports = async (request, response) =>
-	await serve(request, response, serveOptions)
-`
-		},
-		"ecosystem.config.js" () {
-			return `module.exports = {
-	apps : [{
-		name: "snoot",
-		script: "npm start",
-		watch: true
-  }]
-}
+module.exports = (request, response) =>
+	boop(request, response)
 `
 		},
 		".start.sh" () {
@@ -120,8 +104,7 @@ chmod 700 -R /root/.ssh
 cd /application
 npm install
 npm i -g pm2
-pm2 ecosystem.config.js
-pm2 start --name "snoot" --watch npm -- start
+pm2 start ecosystem.config.js
 tail -f /dev/null
 `
 		},
