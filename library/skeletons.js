@@ -242,7 +242,8 @@ exports.write = async function write (options) {
 		render,
 		files = exports.files,
 		uid,
-		gid
+		gid,
+		getPermissions = Function.prototype
 	} = options
 
 	for (let [key, value] of Object.entries(files)) {
@@ -255,6 +256,7 @@ exports.write = async function write (options) {
 
 		out:
 		if (fileType == fileTypes.file) {
+			// this is a file node
 			let fileCreator = value
 			if (await fs.pathExists(filePath)) {
 				let {shouldContinue} = await inquirer.prompt({
@@ -269,8 +271,10 @@ exports.write = async function write (options) {
 				}
 			}
 			await fs.outputFile(filePath, render(fileCreator))
-			await fs.chmod(filePath, 0o664)
+			let permissions = getPermissions(filePath) || 0o664
+			await fs.chmod(filePath, permissions)
 		} else {
+			// this is a directory node
 			let files = value
 			await fs.mkdirp(filePath)
 			await fs.chmod(filePath, 0o755)
