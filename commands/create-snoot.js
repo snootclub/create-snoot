@@ -137,12 +137,15 @@ module.exports = async function createSnoot () {
 	log("adding their authorized_keys ➕🔑 file so they can log in (:")
 	await snoots.createChrootSshConfiguration(snoot, {authorizedKeys})
 
-	log("generating their base application files! 📠 🎰")
+	log("creating a bare git repo for them to live at /repo")
+	await snoots.createBareRepo(snoot)
+
 	let {
 		sshPort,
 		webPort
 	} = await snoots.getPorts(snoot)
 
+	log("generating their base application files! 📠 🎰")
 	await snoots.createBaseApplication(snoot, {
 		authorizedKeys,
 		sshPort,
