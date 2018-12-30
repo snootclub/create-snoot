@@ -83,11 +83,13 @@ async function createBaseApplication (snoot, options = {}) {
 			authorizedKeys,
 			sshPort,
 			webPort
-		})
+		}),
+		getPermissions: filePath =>
+			filePath == applicationResolver(snoot, ".start.sh").path ||
+				filePath == resolver(snoot, "repo", "hooks", "post-receive").path
+					? 0o755
+					: null
 	})
-
-	// HACK oh no could i put this in the definition somewhere?
-	await fs.chmod(applicationResolver(snoot, ".start.sh").path, 0o775)
 }
 
 function bootContainer (snoot) {
@@ -190,11 +192,15 @@ async function getPorts (snoot) {
 
 async function demandExistence (snoot) {
 	let names = await getNames()
-	
+
 	if (!names.includes(snoot)) {
 		shout(`no such snoot: ${snoot}`)
 		process.exit(47)
 	}
+}
+
+async function createBareRepo (snoot) {
+	await shell.run(`git init --bare ${resolver(snoot, "repo").path}`)
 }
 
 module.exports = {
@@ -216,5 +222,6 @@ module.exports = {
 	getNames,
 	getConfig,
 	getPorts,
-	demandExistence
+	demandExistence,
+	createBareRepo
 }
