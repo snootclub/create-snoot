@@ -118,13 +118,27 @@ module.exports = (request, response) =>
 	boop(request, response)
 `
 		},
-		".start.sh" () {
+		".start.sh" ({snoot}) {
 			return `#!/bin/sh
 mv /application/authorized_keys /root/.ssh/authorized_keys
 cd /application
 npm install
 npm run-script build
 pm2 start ecosystem.config.js
+if [ ! -e .git ]; then
+	git init
+	git remote add origin ../repo
+	git branch -u origin/master
+	if $(git pull origin master); then
+		echo get your coat mate youve pulled
+	else
+		git config --global user.name ${snoot}
+		git config --global user.email ${snoot}@snoot.club
+		git add .
+		git commit -m "${snoot}'s snoot starts here"
+		git push -u origin master
+	fi
+fi
 tail -f /dev/null
 `
 		},
