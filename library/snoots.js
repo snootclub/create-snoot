@@ -17,6 +17,10 @@ let validateName = snoot =>
 let applicationResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", ...paths)
 
+
+let repoResolver = (snoot, ...paths) =>
+	resolver(snoot, "repo", ...paths)
+
 let websiteResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", "website", ...paths)
 
@@ -63,6 +67,17 @@ async function createUnixAccount (snoot) {
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
 		homeDirectory: chrootResolver(snoot).path
+	})
+}
+
+async function createBareRepo (snoot) {
+	let snootRepoResolver = repoResolver(snoot)
+	await shell.run(`git init --bare ${snootRepoResolver.path}`)
+	await unix.chown({
+		user: await unix.getUserId(snoot),
+		group: await unix.getCommonGid(),
+		path: snootRepoResolver.path,
+		recurse: true
 	})
 }
 
@@ -197,10 +212,6 @@ async function demandExistence (snoot) {
 		shout(`no such snoot: ${snoot}`)
 		process.exit(47)
 	}
-}
-
-async function createBareRepo (snoot) {
-	await shell.run(`git init --bare ${resolver(snoot, "repo").path}`)
 }
 
 module.exports = {
