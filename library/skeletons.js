@@ -63,7 +63,9 @@ services:
 `
 	},
 	application: {
-		boops: {},
+		boops: {
+			".gitkeep": () => "a polite request to git to keep this empty directory"
+		},
 		"ecosystem.config.js" () {
 			return `module.exports = {
 	apps : [{
