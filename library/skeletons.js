@@ -49,12 +49,13 @@ server {
 		return `version: "3"
 services:
   snoot:
-    image: "snootclub/snoot:flower"
+		image: "snootclub/snoot:smile"
     working_dir: /application
     environment:
       - NODE_ENV=production
     volumes:
       - ./application/:/application
+			- ./repo:/repo
     ports:
       - "${sshPort}:22"
       - "${webPort}:80"
