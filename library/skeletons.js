@@ -105,7 +105,7 @@ npx @snootclub/post-receive`
 	"license": "GPL-3.0+",
 	"description": "${snoot} application on snoot.club",
 	"dependencies": {
-		"@snootclub/boop": "^0.0.3",
+		"@snootclub/boop": "^0.0.4",
 		"micro": "^9.3.3"
 	}
 }
