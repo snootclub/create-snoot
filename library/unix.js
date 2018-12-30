@@ -58,6 +58,15 @@ exports.chmod = async function chmod ({mode, path, recurse = true}) {
 	)
 }
 
+exports.chown = async function chmod ({user, group, path, recurse = true}) {
+	let r = recurse ? "-R" : ""
+
+	return shell.run(
+		`chown ${r} ${user}.${group} ${path}`,
+		{sudo: true}
+	)
+}
+
 exports.mkdir = async function mkdir ({path, createParents = true, sudo = true}) {
 	let p = createParents
 		? "-p"
