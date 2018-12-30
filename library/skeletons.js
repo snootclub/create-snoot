@@ -63,6 +63,14 @@ services:
 		command: "/application/.start.sh"
 `
 	},
+	repo: {
+		hooks: {
+			"post-receive" () {
+				return `#!/bin/sh
+npx @snootclub/post-receive`
+			}
+		}
+	},
 	application: {
 		boops: {
 			".gitkeep": () => "a polite request to git to keep this empty directory"
