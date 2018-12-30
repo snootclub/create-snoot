@@ -89,7 +89,7 @@ services:
 	"license": "GPL-3.0+",
 	"description": "${snoot} application on snoot.club",
 	"dependencies": {
-		"@snootclub/boop": "^0.0.1",
+		"@snootclub/boop": "^0.0.3",
 		"micro": "^9.3.3"
 	}
 }
