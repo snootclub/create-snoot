@@ -75,6 +75,11 @@ npx @snootclub/post-receive`
 		boops: {
 			".gitkeep": () => "a polite request to git to keep this empty directory"
 		},
+		".gitignore" () {
+			return `node_modules/
+.cache/
+`
+		},
 		"ecosystem.config.js" () {
 			return `module.exports = {
 	apps : [{
