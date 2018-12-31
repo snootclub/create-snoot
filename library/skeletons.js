@@ -121,6 +121,8 @@ module.exports = (request, response) =>
 		".start.sh" ({snoot}) {
 			return `#!/bin/sh
 mv /application/authorized_keys /root/.ssh/authorized_keys
+chown root.root /root/.ssh/authorized_keys
+/bin/sshd
 cd /application
 npm install
 npm run-script build
@@ -270,7 +272,7 @@ exports.write = async function write (options) {
 		files = exports.files,
 		uid,
 		gid,
-		getPermissions = Function.prototype
+		getPermissions = () => ({uid, gid, mode})
 	} = options
 
 	for (let [key, value] of Object.entries(files)) {
@@ -280,6 +282,7 @@ exports.write = async function write (options) {
 			: fileTypes.directory
 
 		let filePath = fileResolver.path
+		let permissions = getPermissions({filePath, fileType}) || {}
 
 		out:
 		if (fileType == fileTypes.file) {
@@ -298,8 +301,7 @@ exports.write = async function write (options) {
 				}
 			}
 			await fs.outputFile(filePath, render(fileCreator))
-			let permissions = getPermissions(filePath) || 0o664
-			await fs.chmod(filePath, permissions)
+			await fs.chmod(filePath, permissions.mode || 0o664)
 		} else {
 			// this is a directory node
 			let files = value
@@ -313,8 +315,8 @@ exports.write = async function write (options) {
 
 		await fs.chown(
 			filePath,
-			uid,
-			gid
+			permissions.uid || uid,
+			permissions.gid || gid
 		)
 	}
 }
