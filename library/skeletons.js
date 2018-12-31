@@ -301,7 +301,7 @@ exports.write = async function write (options) {
 				}
 			}
 			await fs.outputFile(filePath, render(fileCreator))
-			await fs.chmod(filePath, permissions.mode || 0o664)
+			await fs.chmod(filePath, permissions.mode || 0o644)
 		} else {
 			// this is a directory node
 			let files = value
