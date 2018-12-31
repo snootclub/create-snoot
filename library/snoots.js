@@ -99,18 +99,12 @@ async function createBaseApplication (snoot, options = {}) {
 			sshPort,
 			webPort
 		}),
-		getPermissions: ({filePath, fileType}) => {
-			let rwxr_xr_x = 0o755
+		getPermissions ({filePath, fileType}) {
 			if (fileType == skeletons.fileTypes.file) {
-				let startScript = applicationResolver(snoot, "start.sh").path
-				if (filePath == startScript) {
-					return {
-						mode: rwxr_xr_x
-					}
-				}
-
-				let postReceive = repoResolver(snoot, "hooks", "post-receive")
-				if (filePath == postReceive) {
+				let rwxr_xr_x = 0o755
+				let startScript = applicationResolver(snoot, ".start.sh").path
+				let postReceive = repoResolver(snoot, "hooks", "post-receive").path
+				if (filePath == startScript || filePath == postReceive) {
 					return {
 						mode: rwxr_xr_x
 					}

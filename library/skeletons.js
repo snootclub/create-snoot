@@ -306,7 +306,7 @@ exports.write = async function write (options) {
 			// this is a directory node
 			let files = value
 			await fs.mkdirp(filePath)
-			await fs.chmod(filePath, 0o755)
+			await fs.chmod(filePath, permissions.mode || 0o775)
 			await write(merge(options, {
 				resolver: fileResolver,
 				files
