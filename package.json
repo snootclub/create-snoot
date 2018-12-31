@@ -1,6 +1,6 @@
 {
   "name": "@snootclub/create-snoot",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "snoot club",
   "main": "index.js",
   "scripts": {
