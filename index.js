@@ -4,9 +4,10 @@ let createSnoot = require("./commands/create-snoot.js")
 let enterSnoot = require("./commands/enter-snoot.js")
 let startSnoot = require("./commands/start-snoot.js")
 let stopSnoot = require("./commands/stop-snoot.js")
+let exec = require("./commands/exec.js")
+let get = require("./commands/get.js")
 
 let each = require("./commands/each.js")
-let get = require("./commands/get.js")
 let ls = require("./commands/ls.js")
 
 let noop = Function.prototype
@@ -51,6 +52,16 @@ let arguments = yargs
 		"stop <snoot>",
 		"stop a snoot's container",
 		positionalSnoot,
+		stopSnoot
+	)
+	.command(
+		"exec <snoot> <command>",
+		"run a command in a snoot's container",
+		yargs =>
+			positionalSnoot(yargs)
+				.positional("command", {
+					describe: "the command to run"
+				}),
 		stopSnoot
 	)
 	.demandCommand()
