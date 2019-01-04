@@ -97,7 +97,7 @@ npx @snootclub/post-receive`
 		"install": "boop",
 		"watch": "boop",
 		"build": "boop",
-		"start": "micro -l tcp://0.0.0.0:\${SNOOT_MICRO_PORT-80}"
+		"start": "micro -l tcp://0.0.0.0:80"
 	},
 	"author": "${snoot} <${snoot}@snoot.club>",
 	"license": "GPL-3.0+",
