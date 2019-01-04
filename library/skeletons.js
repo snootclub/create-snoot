@@ -51,8 +51,6 @@ services:
   snoot:
     image: "snootclub/snoot:smile"
     working_dir: /application
-    environment:
-      - NODE_ENV=production
     volumes:
       - ./application/:/application
       - ./repo:/repo
