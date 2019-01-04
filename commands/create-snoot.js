@@ -161,8 +161,10 @@ module.exports = async function createSnoot () {
 	log("restarting nginx 🔂")
 	await shell.run("nginx -s reload")
 
-	log("updating next snoot port 🌸")
-	await snoots.setNextPort(webPort + 1)
+	if (!snootAlreadyExists) {
+		log("updating next snoot port 🌸")
+		await snoots.setNextPort(webPort + 1)
+	}
 }
 
 let beingRunDirectly = process.argv[1].match(/create-snoot($|\.js$)/)
