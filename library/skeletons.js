@@ -151,6 +151,10 @@ tail -f /dev/null
 <meta charset="utf-8">
 <title>${snoot}'s a snoot</title>
 <style>
+	* {
+		scrollbar-color: #cc3669 #ffe9ed;
+	}
+
 	::selection {
 		background: black;
 		color: white;
