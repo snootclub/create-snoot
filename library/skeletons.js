@@ -49,7 +49,7 @@ server {
 		return `version: "3"
 services:
   snoot:
-    image: "snootclub/snoot:smile"
+    image: "snootclub/snoot:soft"
     working_dir: /application
     volumes:
       - ./application/:/application
