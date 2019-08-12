@@ -28,7 +28,7 @@ async function getKeysFromGithub (githubUsername) {
 		.then(response => response.text())
 }
 
-module.exports = async function createSnoot () {
+module.exports = async function createSnoot ({snoot: name = ""}) {
 	let hasPrivilege = unix.checkYourPrivilege()
 
 	if (!hasPrivilege) {
@@ -45,7 +45,8 @@ module.exports = async function createSnoot () {
 			type: "input",
 			name: "snoot",
 			message: "oh, a new snoot? 💕 \nwhat's their name?",
-			validate: snoots.validateName
+			validate: snoots.validateName,
+			default: name
 		},
 		{
 			type: "list",
@@ -72,7 +73,7 @@ module.exports = async function createSnoot () {
 	}
 
 	let existingKeys = snootAlreadyExists && (
-		await snoots.getAuthorizedKeys()
+		await snoots.getAuthorizedKeys(snoot)
 	)
 
 	let {

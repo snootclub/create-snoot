@@ -14,11 +14,16 @@ let noop = Function.prototype
 
 let positionalSnoot = yargs =>
 	yargs.positional("snoot", {
-		describe: "the name of the snoot you'd like to enter"
+		describe: "the name of the snoot you'd like",
 	})
 
-let arguments = yargs
-	.command(["create", "new"], "create a new snoot", noop, createSnoot)
+yargs
+	.command(
+		["create <snoot>", "new <snoot>"],
+		"create a new snoot",
+		positionalSnoot,
+		createSnoot
+	)
 	.command(["ls", "list"], "list snoots", noop, ls)
 	.command(
 		"enter <snoot>",
@@ -26,43 +31,14 @@ let arguments = yargs
 		positionalSnoot,
 		enterSnoot
 	)
-	.command("get <snoot> <key>", "get snoot data", yargs => {
-		positionalSnoot(yargs)
-			.positional("key", {
-				describe: "the key for the data you'd like to see"
+	.command(
+		"get <snoot> <key>",
+		"get snoot data",
+		yargs => {
+			positionalSnoot(yargs).positional("key", {
+				describe: "the key for the data you'd like to see",
 			})
-	}, get)
-	.command(
-		"each <command>",
-		"run a command in each snoot",
-		yargs => yargs.positional(
-			"command", {
-				describe: "the command to run. the env variable SNOOT_NAME will be set with snoot's name"
-			}
-		),
-		each
+		},
+		get
 	)
-	.command(
-		"start <snoot>",
-		"start a snoot's container",
-		positionalSnoot,
-		startSnoot
-	)
-	.command(
-		"stop <snoot>",
-		"stop a snoot's container",
-		positionalSnoot,
-		stopSnoot
-	)
-	.command(
-		"exec <snoot> <command>",
-		"run a command in a snoot's container",
-		yargs =>
-			positionalSnoot(yargs)
-				.positional("command", {
-					describe: "the command to run"
-				}),
-		stopSnoot
-	)
-	.demandCommand()
-	.argv
+	.demandCommand().argv
