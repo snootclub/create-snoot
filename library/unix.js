@@ -37,7 +37,7 @@ exports.createUser = async function createUser ({
 		groups
 	}) {
 		let command = [
-			"useradd -m",
+			"useradd -M",
 			"-d", homeDirectory,
 			"-g", groups[0],
 			"-G", groups.join(","),
@@ -64,17 +64,6 @@ exports.chown = async function chmod ({user, group, path, recurse = true}) {
 	return shell.run(
 		`chown ${r} ${user}.${group} ${path}`,
 		{sudo: true}
-	)
-}
-
-exports.mkdir = async function mkdir ({path, createParents = true, sudo = true}) {
-	let p = createParents
-		? "-p"
-		: ""
-
-	return shell.run(
-		`mkdir ${p} ${path}`,
-		{sudo}
 	)
 }
 
