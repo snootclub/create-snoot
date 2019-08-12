@@ -7,7 +7,6 @@ let {shout} = require("./loggo.js")
 
 let rootResolver = createResolver("/www/snoot.club")
 let resolver = rootResolver("snoots")
-let homeResolver = createResolver("/snoots")
 
 let validNameRegex = /^[a-z][a-z0-9]{0,30}$/
 
@@ -30,36 +29,21 @@ async function getAuthorizedKeys (snoot) {
 	return fs.readFile(authorizedKeysPath, "utf-8")
 }
 
-async function linkHome (snoot) {
-	let home = homeResolver(snoot).path
-	if (!fs.pathExists(home)) {
-			await unix.ln({
-				from: home,
-				to: resolver("snoot").path
-			})
-	}
-}
-
 async function fixSshPermissions (snoot) {
-	let snootHomeResolver = homeResolver(snoot)
 	let snootResolver = resolver(snoot)
 	let sshDirectoryResolver = snootResolver(".ssh")
 	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
 
-	let rootOwnedPaths = [
-		homeResolver.path
-	]
-
 	let snootOwnedPaths = [
 		sshDirectoryResolver.path,
 		authorizedKeysPath,
-		snootHomeResolver.path
+		snootResolver.path
 	]
 
 	let snootId = await unix.getUserId(snoot)
 	let commonId = await unix.getCommonGid()
 
-	for (let path of [...rootOwnedPaths, ...snootOwnedPaths]) {
+	for (let path of snootOwnedPaths) {
 		await fs.chmod(path, 0o755)
 	}
 
@@ -68,17 +52,13 @@ async function fixSshPermissions (snoot) {
 	for (let path of snootOwnedPaths) {
 		await fs.chown(path, snootId, commonId)
 	}
-
-	for (let path of rootOwnedPaths) {
-		await fs.chown(path, 0, 0)
-	}
 }
 
 async function createUnixAccount (snoot) {
 	return unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
-		homeDirectory: homeResolver(snoot).path
+		homeDirectory: createResolver("/")("snoots", snoot).path
 	})
 }
 
@@ -137,7 +117,6 @@ async function demandExistence (snoot) {
 module.exports = {
 	rootResolver,
 	resolver,
-	homeResolver,
 	applicationResolver,
 	websiteResolver,
 	createUnixAccount,
@@ -148,6 +127,5 @@ module.exports = {
 	getNames,
 	demandExistence,
 	createBareRepo,
-	getAuthorizedKeys,
-	linkHome
+	getAuthorizedKeys
 }

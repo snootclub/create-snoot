@@ -127,8 +127,6 @@ module.exports = async function createSnoot () {
 			})
 	}
 
-	await snoots.linkHome(snoot)
-
 	log("creating a bare git repo for them to live at /repo")
 	await snoots.createBareRepo(snoot)
 
