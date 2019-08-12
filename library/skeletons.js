@@ -4,16 +4,7 @@ let inquirer = require("inquirer")
 
 exports.files = {
 	logs: {},
-	"snoot.json" ({snoot, githubUsername, webPort, sshPort, authorizedKeys}) {
-		return JSON.stringify({
-			snoot,
-			webPort,
-			sshPort,
-			authorizedKeys,
-			githubUsername
-		}, null, "\t") + os.EOL
-	},
-	"nginx.conf" ({snoot, webPort}) {
+	"nginx.conf" (snoot) {
 		return `server {
 	include /www/snoot.club/blocks/error_page.nginx;
 	include /www/snoot.club/blocks/ssl.nginx;
@@ -21,12 +12,12 @@ exports.files = {
 	default_type text/plain;
 
 	server_name ${snoot}.snoot.club;
-	access_log /www/snoot.club/snoots/${snoot}/logs/access.ssl.log;
-	error_log /www/snoot.club/snoots/${snoot}/logs/error.ssl.log;
+	access_log /www/snoot.club/snoots/logs/${snoot}.access.ssl.log;
+	error_log /www/snoot.club/snoots/logs/${snoot}.error.ssl.log;
 
 	location / {
 		include /www/snoot.club/blocks/cors.nginx;
-		proxy_pass http://127.0.0.1:${webPort}/;
+		proxy_pass http://unix:/www/snoot.club/snoots/${snoot}/application/sock:/;
 		proxy_set_header Host $http_host;
 		proxy_set_header X-Real-IP $remote_addr;
 		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -43,22 +34,6 @@ server {
 	server_name ${snoot}.snoot.club;
 	return 301 https://${snoot}.snoot.club$request_uri;
 }
-`
-	},
-	"docker-compose.yml" ({sshPort, webPort}) {
-		return `version: "3"
-services:
-  snoot:
-    image: "snootclub/snoot:soft"
-    working_dir: /application
-    volumes:
-      - ./application/:/application
-      - ./repo:/repo
-    ports:
-      - "${sshPort}:22"
-      - "${webPort}:80"
-    restart: always
-    command: "/application/.start.sh"
 `
 	},
 	repo: {
@@ -78,17 +53,7 @@ npx @snootclub/post-receive`
 .cache/
 `
 		},
-		"ecosystem.config.js" () {
-			return `module.exports = {
-	apps : [{
-		name: "snoot",
-		script: "npm start",
-		watch: true
-	}]
-}
-`
-		},
-		"package.json" ({snoot}) {
+		"package.json" (snoot) {
 			return `{
 	"name": "${snoot}-application",
 	"version": "1.0.0",
@@ -97,13 +62,13 @@ npx @snootclub/post-receive`
 		"install": "boop",
 		"watch": "boop",
 		"build": "boop",
-		"start": "micro -l tcp://0.0.0.0:80"
+"start": "micro -l unix:sock"
 	},
 	"author": "${snoot} <${snoot}@snoot.club>",
 	"license": "GPL-3.0+",
 	"description": "${snoot} application on snoot.club",
 	"dependencies": {
-		"@snootclub/boop": "^0.0.9",
+		"@snootclub/boop": "^0.0.14",
 		"micro": "^9.3.3"
 	}
 }
@@ -116,37 +81,8 @@ module.exports = (request, response) =>
 	boop(request, response)
 `
 		},
-		".start.sh" ({snoot}) {
-			return `#!/bin/sh
-mv /application/authorized_keys /root/.ssh/authorized_keys
-chown root.root /root/.ssh/authorized_keys
-/bin/sshd
-cd /application
-npm install
-npm run-script build
-pm2 start ecosystem.config.js
-if [ ! -e .git ]; then
-	git init
-	git remote add origin ../repo
-	git branch -u origin/master
-	if $(git pull origin master); then
-		echo get your coat mate youve pulled
-	else
-		git config --global user.name ${snoot}
-		git config --global user.email ${snoot}@snoot.club
-		git add .
-		git commit -m "${snoot}'s snoot starts here"
-		git push -u origin master
-	fi
-fi
-tail -f /dev/null
-`
-		},
-		"authorized_keys" ({authorizedKeys}) {
-			return authorizedKeys
-		},
 		website: {
-			"index.html" ({snoot, sshPort}) {
+			"index.html" (snoot) {
 				return `<!doctype html>
 <meta charset="utf-8">
 <title>${snoot}'s a snoot</title>
@@ -200,57 +136,19 @@ tail -f /dev/null
 </h1>
 
 <p>
-	if you are <strong>${snoot}</strong>, then you have two choices:
+	if you are <strong>${snoot}</strong>, you can now ssh or ftp into your account!
 </p>
-
-<ul>
-	<li>
-		<h2>sftp into the snoot.club server</h2>
-		<p>
-			this is if you only want to set up static files. anything
-			you drop in the website/ folder will be available publicly at ${snoot}.snoot.club
-		</p>
-		<ul>
-			<li><code>sftp ${snoot}@snoot.club</code></li>
-			<li>
-				the page you are reading right now is the file located at
-				<code>./website/index.html</code>
-			</li>
-		</ul>
-	</li>
-	<li>
-		<h2>ssh into the ${snoot}.snoot.club container</h2>
-		<p>
-			this allows you to edit the whole application. you're a full
-			administrator and anything you set up to listen on port 80
-			will be available at this address.
-		</p>
-		<ul>
-			<li><code>ssh root@snoot.club -p ${sshPort}</code></li>
-			<li>
-				the page you are reading right now is the file located at
-				<code>/application/website/index.html</code>.
-			</li>
-		</ul>
-	</li>
-</ul>
-
-<hr>
 
 <p>
-	if you want to ssh in without remembering the port, adding
-	the below to the <code>~/.ssh/config</code> on your local machine
-	will let you access it by running <code>ssh snoot</code> in a terminal.
+	the page you are reading right now is the file located at
+	<code>./application/website/index.html</code>
 </p>
 
-<pre>
-<code>
-Host snoot
-	User root
-	HostName snoot.club
-	Port ${sshPort}
-</code>
-</pre>
+<p>
+	the start script in your <code>package.json</code> will be run automatically.
+	it needs to create a unix domain socket called <code>sock</code> in
+	the application directory.
+</p>
 `
 			}
 		}

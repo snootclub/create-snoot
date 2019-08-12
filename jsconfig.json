@@ -1,0 +1,6 @@
+{
+  "lib": "es2019",
+  "compilerOptions": {
+    "downlevelIteration": true
+  }
+}

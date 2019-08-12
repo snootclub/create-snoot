@@ -84,10 +84,13 @@ exports.unmount = directory =>
 		{sudo: true}
 	)
 
-exports.bind = async (boy, bedposts) => {
-	await fs.mkdirp(bedposts)
+exports.ln = async function ln ({from, to, symbolic = true, sudo = true}) {
+	let s = symbolic
+		? "-s"
+		: ""
+
 	return shell.run(
-		`mount --bind ${boy} ${bedposts}`,
-		{sudo: true}
-	).then(code => code && Promise.reject("couldnt bind"))
+		`ln ${s} ${to} ${from}`,
+		{sudo}
+	)
 }

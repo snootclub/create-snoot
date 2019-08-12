@@ -21,7 +21,7 @@ process.on("uncaughtException", error => {
 	process.exit(222)
 })
 
-function getKeysFromGithub (githubUsername) {
+async function getKeysFromGithub (githubUsername) {
 	log("gonna get them an authorized_keys file from github")
 
 	return fetch(`https://github.com/${githubUsername}.keys`)
@@ -128,43 +128,25 @@ module.exports = async function createSnoot () {
 			})
 	}
 
-	let snootWebsitePath = snoots.chrootResolver(snoot, "website").path
-
-	if (!await fs.pathExists(snootWebsitePath)) {
-		await fs.mkdirp(snootWebsitePath)
-	}
-
 	log("adding their authorized_keys ➕🔑 file so they can log in (:")
-	await snoots.createChrootSshConfiguration(snoot, {authorizedKeys})
+	await snoots.createHomeSshConfiguration(snoot, {authorizedKeys})
 
 	log("creating a bare git repo for them to live at /repo")
 	await snoots.createBareRepo(snoot)
 
-	let {
-		sshPort,
-		webPort
-	} = await snoots.getPorts(snoot)
+	log("giving them a gitconfig")
+	await snoots.createHomeGitConfiguration(snoot)
 
 	log("generating their base application files! 📠 🎰")
-	await snoots.createBaseApplication(snoot, {
-		authorizedKeys,
-		sshPort,
-		webPort
-	})
+	await snoots.createBaseApplication(snoot)
 
-	log("binding snoots 👀")
-	await snoots.bind()
-
-	log("booting snoot container 👢")
-	await snoots.bootContainer(snoot)
+	await fs.move(
+		snoots.applicationResolver("nginx.conf").path,
+		snoots.rootResolver("snoots-nginx")(`${snoot}.conf`).path
+	)
 
 	log("restarting nginx 🔂")
 	await shell.run("nginx -s reload")
-
-	if (!snootAlreadyExists) {
-		log("updating next snoot port 🌸")
-		await snoots.setNextPort(webPort + 1)
-	}
 }
 
 let beingRunDirectly = process.argv[1].match(/create-snoot($|\.js$)/)

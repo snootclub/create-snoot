@@ -3,11 +3,11 @@ let createResolver = require("./create-path-resolver.js")
 let unix = require("./unix.js")
 let shell = require("./shell.js")
 let skeletons = require("./skeletons.js")
-let {warn, shout} = require("./loggo.js")
+let {shout} = require("./loggo.js")
 
 let rootResolver = createResolver("/www/snoot.club")
 let resolver = rootResolver("snoots")
-let chrootResolver = createResolver("/snoots")
+let homeResolver = createResolver("/snoots")
 
 let validNameRegex = /^[a-z][a-z0-9]{0,30}$/
 
@@ -17,16 +17,16 @@ let validateName = snoot =>
 let applicationResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", ...paths)
 
-
 let repoResolver = (snoot, ...paths) =>
 	resolver(snoot, "repo", ...paths)
 
 let websiteResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", "website", ...paths)
 
-async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
-	let snootChrootResolver = chrootResolver(snoot)
-	let sshDirectoryResolver = snootChrootResolver(".ssh")
+async function createHomeSshConfiguration (snoot, {authorizedKeys}) {
+	let snootHomeResolver = homeResolver(snoot)
+	let snootResolver = resolver(snoot)
+	let sshDirectoryResolver = snootResolver(".ssh")
 	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
 
 	await fs.outputFile(
@@ -35,14 +35,19 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 	)
 
 	let rootOwnedPaths = [
-		chrootResolver.path,
-		snootChrootResolver.path,
+		homeResolver
 	]
 
 	let snootOwnedPaths = [
 		sshDirectoryResolver.path,
-		authorizedKeysPath
+		authorizedKeysPath,
+		snootHomeResolver.path
 	]
+
+	await unix.ln({
+		from: snootHomeResolver.path,
+		to: snootResolver.path
+	})
 
 	let snootId = await unix.getUserId(snoot)
 	let commonId = await unix.getCommonGid()
@@ -62,11 +67,30 @@ async function createChrootSshConfiguration (snoot, {authorizedKeys}) {
 	}
 }
 
+async function createHomeGitConfiguration (snoot) {
+	let snootResolver = resolver(snoot)
+	let gitconfigPath = snootResolver(".gitconfig").path
+
+	let gitconfig = `[user]
+	name = ${snoot}
+	email ${snoot}@snoot.club
+`
+
+	await fs.outputFile(
+		gitconfig,
+		gitconfigPath
+	)
+
+	let snootId = await unix.getUserId(snoot)
+	let commonId = await unix.getCommonGid()
+	await fs.chown(gitconfigPath, snootId, commonId)
+}
+
 async function createUnixAccount (snoot) {
 	return await unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
-		homeDirectory: chrootResolver(snoot).path
+		homeDirectory: homeResolver(snoot).path
 	})
 }
 
@@ -81,30 +105,17 @@ async function createBareRepo (snoot) {
 	})
 }
 
-async function createBaseApplication (snoot, options = {}) {
-	let {
-		authorizedKeys = "",
-		sshPort = 22222,
-		webPort = 22333
-	} = options
-
+async function createBaseApplication (snoot) {
 	await skeletons.write({
 		resolver: resolver(snoot),
 		uid: await unix.getUserId(snoot),
 		gid: await unix.getCommonGid(),
-		render: compile => compile({
-			snoot,
-			snootRoot: resolver.path,
-			authorizedKeys,
-			sshPort,
-			webPort
-		}),
+		render: compile => compile(snoot),
 		getPermissions ({filePath, fileType}) {
 			if (fileType == skeletons.fileTypes.file) {
 				let rwxr_xr_x = 0o755
-				let startScript = applicationResolver(snoot, ".start.sh").path
 				let postReceive = repoResolver(snoot, "hooks", "post-receive").path
-				if (filePath == startScript || filePath == postReceive) {
+				if (filePath == postReceive) {
 					return {
 						mode: rwxr_xr_x
 					}
@@ -114,40 +125,10 @@ async function createBaseApplication (snoot, options = {}) {
 	})
 }
 
-function bootContainer (snoot) {
-	let result = shell.run("docker-compose up -d", {
-		cwd: resolver(snoot).path
-	})
-
-	result.stdout.pipe(process.stdout)
-
-	return result.then(code => (
-		code && warn(`couldn't boot the snoot! (${snoot})`),
-		result.stderr.pipe(process.stderr),
-		code
-	))
-}
-
-let nextPortPath = resolver(".next-port").path
-
-async function getNextPort () {
-	return await fs.pathExists(nextPortPath)
-		? Number(await fs.readFile(nextPortPath))
-		: 22222
-}
-
-async function setNextPort (port) {
-	return fs.outputFile(nextPortPath, port)
-}
-
-function getConfigPath (snoot) {
-	return resolver(snoot, "snoot.json").path
-}
-
 async function getNames () {
 	let files = await fs.readdir(resolver.path)
 	return files.filter(name =>
-		validateName(name) && fs.pathExistsSync(getConfigPath(name))
+		validateName(name)
 	)
 }
 
@@ -157,59 +138,9 @@ async function each (fn) {
 	}
 }
 
-async function bind () {
-	await each(async snoot => {
-		let websitePath = websiteResolver(snoot).path
-		let chrootWebsitePath = chrootResolver(snoot, "website").path
-		await fs.mkdirp(websitePath)
-		await unix.unmount(chrootWebsitePath).catch(_ => _)
-		await fs.pathExists(websitePath) &&
-			await unix.bind(websitePath, chrootWebsitePath)
-				.catch(() => {
-					warn(`couldn't bind snoot called "${snoot}", maybe not supported on os?`)
-				})
-	})
-}
-
 async function checkExists (snoot) {
 	let names = await getNames()
 	return names.includes(snoot)
-}
-
-async function getConfig (snoot) {
-	if (!await checkExists(snoot)) {
-		return Promise.reject(`can't get config for no such snoot: ${snoot}`)
-	}
-
-	let configPath = getConfigPath(snoot)
-
-	if (!await fs.pathExists(configPath)) {
-		return Promise.reject(`can't get config for ${snoot}, no snoot.json`)
-	}
-
-	return fs.readJson(configPath)
-}
-
-async function getPorts (snoot) {
-	if (await checkExists(snoot)) {
-		let {
-			sshPort,
-			webPort
-		} = await getConfig(snoot)
-
-		return {
-			sshPort,
-			webPort
-		}
-	}
-
-	let sshPort = await getNextPort()
-	let webPort = sshPort + 1
-
-	return {
-		sshPort,
-		webPort
-	}
 }
 
 async function demandExistence (snoot) {
@@ -224,22 +155,17 @@ async function demandExistence (snoot) {
 module.exports = {
 	rootResolver,
 	resolver,
-	chrootResolver,
+	homeResolver,
 	applicationResolver,
 	websiteResolver,
-	createChrootSshConfiguration,
+	createHomeSshConfiguration,
+	createHomeGitConfiguration,
 	createUnixAccount,
 	createBaseApplication,
-	bootContainer,
-	setNextPort,
-	getNextPort,
 	each,
-	bind,
 	checkExists,
 	validateName,
 	getNames,
-	getConfig,
-	getPorts,
 	demandExistence,
 	createBareRepo
 }
