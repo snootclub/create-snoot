@@ -130,13 +130,13 @@ module.exports = async function createSnoot () {
 	log("creating a bare git repo for them to live at /repo")
 	await snoots.createBareRepo(snoot)
 
-	log("fixing ssh permssions")
-	await snoots.fixSshPermissions(snoot)
-
 	log("generating their base application files! 📠 🎰")
 	await snoots.createBaseApplication(snoot, {authorizedKeys})
 
-	log("restarting nginx 🔂")
+	log("fixing ssh permssions")
+	await snoots.fixSshPermissions(snoot)
+
+	log("running nginx refresh script 🔂")
 	await shell.run("/www/snoot.club/scripts/refresh.zsh /www/snoot.club/")
 }
 
