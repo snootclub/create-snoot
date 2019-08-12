@@ -28,7 +28,7 @@ async function getKeysFromGithub (githubUsername) {
 		.then(response => response.text())
 }
 
-module.exports = async function createSnoot ({snoot: name = ""}) {
+module.exports = async function createSnoot () {
 	let hasPrivilege = unix.checkYourPrivilege()
 
 	if (!hasPrivilege) {

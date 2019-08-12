@@ -21,24 +21,8 @@ yargs
 	.command(
 		["create <snoot>", "new <snoot>"],
 		"create a new snoot",
-		positionalSnoot,
+		noop,
 		createSnoot
 	)
 	.command(["ls", "list"], "list snoots", noop, ls)
-	.command(
-		"enter <snoot>",
-		"enter a snoot's container",
-		positionalSnoot,
-		enterSnoot
-	)
-	.command(
-		"get <snoot> <key>",
-		"get snoot data",
-		yargs => {
-			positionalSnoot(yargs).positional("key", {
-				describe: "the key for the data you'd like to see",
-			})
-		},
-		get
-	)
 	.demandCommand().argv
