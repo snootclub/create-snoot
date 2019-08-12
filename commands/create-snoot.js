@@ -45,8 +45,7 @@ module.exports = async function createSnoot () {
 			type: "input",
 			name: "snoot",
 			message: "oh, a new snoot? 💕 \nwhat's their name?",
-			validate: snoots.validateName,
-			default: name
+			validate: snoots.validateName
 		},
 		{
 			type: "list",
