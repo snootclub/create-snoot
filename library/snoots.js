@@ -30,19 +30,14 @@ async function getAuthorizedKeys (snoot) {
 	return fs.readFile(authorizedKeysPath, "utf-8")
 }
 
-async function createHomeSshConfiguration (snoot, {authorizedKeys}) {
+async function fixSshPermissions (snoot) {
 	let snootHomeResolver = homeResolver(snoot)
 	let snootResolver = resolver(snoot)
 	let sshDirectoryResolver = snootResolver(".ssh")
 	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
 
-	await fs.outputFile(
-		authorizedKeysPath,
-		authorizedKeys
-	)
-
 	let rootOwnedPaths = [
-		homeResolver
+		homeResolver.path
 	]
 
 	let snootOwnedPaths = [
@@ -50,11 +45,6 @@ async function createHomeSshConfiguration (snoot, {authorizedKeys}) {
 		authorizedKeysPath,
 		snootHomeResolver.path
 	]
-
-	await unix.ln({
-		from: snootHomeResolver.path,
-		to: snootResolver.path
-	})
 
 	let snootId = await unix.getUserId(snoot)
 	let commonId = await unix.getCommonGid()
@@ -74,30 +64,17 @@ async function createHomeSshConfiguration (snoot, {authorizedKeys}) {
 	}
 }
 
-async function createHomeGitConfiguration (snoot) {
-	let snootResolver = resolver(snoot)
-	let gitconfigPath = snootResolver(".gitconfig").path
-
-	let gitconfig = `[user]
-	name = ${snoot}
-	email ${snoot}@snoot.club
-`
-
-	await fs.outputFile(
-		gitconfig,
-		gitconfigPath
-	)
-
-	let snootId = await unix.getUserId(snoot)
-	let commonId = await unix.getCommonGid()
-	await fs.chown(gitconfigPath, snootId, commonId)
-}
-
 async function createUnixAccount (snoot) {
-	return await unix.createUser({
+	let homeDirectory =  homeResolver(snoot).path
+	await unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
-		homeDirectory: homeResolver(snoot).path
+		homeDirectory
+	})
+
+	await unix.ln({
+		from: homeDirectory,
+		to: resolver("snoot").path
 	})
 }
 
@@ -112,12 +89,12 @@ async function createBareRepo (snoot) {
 	})
 }
 
-async function createBaseApplication (snoot) {
+async function createBaseApplication (snoot, data) {
 	await skeletons.write({
 		resolver: resolver(snoot),
 		uid: await unix.getUserId(snoot),
 		gid: await unix.getCommonGid(),
-		render: compile => compile(snoot),
+		render: compile => compile(snoot, data),
 		getPermissions ({filePath, fileType}) {
 			if (fileType == skeletons.fileTypes.file) {
 				let rwxr_xr_x = 0o755
@@ -137,12 +114,6 @@ async function getNames () {
 	return files.filter(name =>
 		validateName(name)
 	)
-}
-
-async function each (fn) {
-	for (let snoot of await getNames()) {
-		await fn(snoot)
-	}
 }
 
 async function checkExists (snoot) {
@@ -165,11 +136,9 @@ module.exports = {
 	homeResolver,
 	applicationResolver,
 	websiteResolver,
-	createHomeSshConfiguration,
-	createHomeGitConfiguration,
 	createUnixAccount,
 	createBaseApplication,
-	each,
+	fixSshPermissions,
 	checkExists,
 	validateName,
 	getNames,

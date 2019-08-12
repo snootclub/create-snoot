@@ -3,38 +3,15 @@ let os = require("os")
 let inquirer = require("inquirer")
 
 exports.files = {
-	logs: {},
-	"nginx.conf" (snoot) {
-		return `server {
-	include /www/snoot.club/blocks/error_page.nginx;
-	include /www/snoot.club/blocks/ssl.nginx;
-
-	default_type text/plain;
-
-	server_name ${snoot}.snoot.club;
-	access_log /www/snoot.club/snoots/logs/${snoot}.access.ssl.log;
-	error_log /www/snoot.club/snoots/logs/${snoot}.error.ssl.log;
-
-	location / {
-		include /www/snoot.club/blocks/cors.nginx;
-		proxy_pass http://unix:/www/snoot.club/snoots/${snoot}/application/sock:/;
-		proxy_set_header Host $http_host;
-		proxy_set_header X-Real-IP $remote_addr;
-		proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-		proxy_set_header X-Forwarded-Proto $scheme;
-		include /www/snoot.club/blocks/proxy-cache.nginx;
-		expires $expires;
-		client_max_body_size 222m;
-	}
-}
-
-server {
-	listen 80;
-	listen [::]:80;
-	server_name ${snoot}.snoot.club;
-	return 301 https://${snoot}.snoot.club$request_uri;
-}
-`
+	".ssh": {
+		authorizedKeys (_snoot, {authorizedKeys}) {
+			return authorizedKeys
+		}
+	},
+	".gitconfig" (snoot) {
+		return `[user]
+name = ${snoot}
+email ${snoot}@snoot.club`
 	},
 	repo: {
 		hooks: {
@@ -146,8 +123,16 @@ module.exports = (request, response) =>
 
 <p>
 	the start script in your <code>package.json</code> will be run automatically.
-	it needs to create a unix domain socket called <code>sock</code> in
-	the application directory.
+	you can replace it with anything, and as long as it creates and listens on a
+	unix domain socket at <code>./application/sock</code>, it'll be served. the
+	initial setup already does this, and serves files in
+	<code>./application/website</code> and apps in
+	<code>./application/boops</code> using <a
+	href="https://github.com/snootclub/boops">boops</a>.
+</p>
+
+<p>
+	i promise that's cool and fun and not scary
 </p>
 `
 			}
@@ -185,8 +170,7 @@ exports.write = async function write (options) {
 		let permissions = getPermissions({filePath, fileType}) || {}
 
 		out:
-		if (fileType == fileTypes.file) {
-			// this is a file node
+		if (fileType == fileTypes.file) { // if this is a file node
 			let fileCreator = value
 			if (await fs.pathExists(filePath)) {
 				let {shouldContinue} = await inquirer.prompt({

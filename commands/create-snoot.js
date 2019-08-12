@@ -124,29 +124,20 @@ module.exports = async function createSnoot () {
 			.catch(error => {
 				shout("couldnt create user!")
 				shout(error)
-				warn("creating them a directory 📂 📁 in /snoots as a backup 🦴")
 			})
 	}
-
-	log("adding their authorized_keys ➕🔑 file so they can log in (:")
-	await snoots.createHomeSshConfiguration(snoot, {authorizedKeys})
 
 	log("creating a bare git repo for them to live at /repo")
 	await snoots.createBareRepo(snoot)
 
-	log("giving them a gitconfig")
-	await snoots.createHomeGitConfiguration(snoot)
+	log("fixing ssh permssions")
+	await snoots.fixSshPermissions(snoot)
 
 	log("generating their base application files! 📠 🎰")
-	await snoots.createBaseApplication(snoot)
-
-	await fs.move(
-		snoots.applicationResolver("nginx.conf").path,
-		snoots.rootResolver("snoots-nginx")(`${snoot}.conf`).path
-	)
+	await snoots.createBaseApplication(snoot, {authorizedKeys})
 
 	log("restarting nginx 🔂")
-	await shell.run("nginx -s reload")
+	await shell.run("/www/snoot.club/scripts/refresh.zsh /www/snoot.club/")
 }
 
 let beingRunDirectly = process.argv[1].match(/create-snoot($|\.js$)/)
