@@ -72,7 +72,7 @@ module.exports = async function createSnoot () {
 	}
 
 	let existingKeys = snootAlreadyExists && (
-		(await snoots.getConfig(snoot)).authorizedKeys
+		await snoots.getAuthorizedKeys()
 	)
 
 	let {

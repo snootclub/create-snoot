@@ -23,6 +23,13 @@ let repoResolver = (snoot, ...paths) =>
 let websiteResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", "website", ...paths)
 
+async function getAuthorizedKeys (snoot) {
+	let snootResolver = resolver(snoot)
+	let sshDirectoryResolver = snootResolver(".ssh")
+	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
+	return fs.readFile(authorizedKeysPath, "utf-8")
+}
+
 async function createHomeSshConfiguration (snoot, {authorizedKeys}) {
 	let snootHomeResolver = homeResolver(snoot)
 	let snootResolver = resolver(snoot)
@@ -167,5 +174,6 @@ module.exports = {
 	validateName,
 	getNames,
 	demandExistence,
-	createBareRepo
+	createBareRepo,
+	getAuthorizedKeys
 }
