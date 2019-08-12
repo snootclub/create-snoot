@@ -41,7 +41,7 @@ exports.createUser = async function createUser ({
 			"-d", homeDirectory,
 			"-g", groups[0],
 			"-G", groups.join(","),
-			"-s /bin/no-login",
+			"-s /bin/bash",
 			user
 		].join(" ")
 

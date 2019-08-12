@@ -4,7 +4,7 @@ let inquirer = require("inquirer")
 
 exports.files = {
 	".ssh": {
-		authorizedKeys (_snoot, {authorizedKeys}) {
+		authorized_keys (_snoot, {authorizedKeys}) {
 			return authorizedKeys
 		}
 	},
@@ -128,11 +128,11 @@ module.exports = (request, response) =>
 	initial setup already does this, and serves files in
 	<code>./application/website</code> and apps in
 	<code>./application/boops</code> using <a
-	href="https://github.com/snootclub/boops">boops</a>.
+	href="https://github.com/snootclub/boop">boops</a>.
 </p>
 
 <p>
-	i promise that's cool and fun and not scary
+	i promise that's cool and fun
 </p>
 `
 			}

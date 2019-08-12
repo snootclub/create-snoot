@@ -44,7 +44,7 @@ async function fixSshPermissions (snoot) {
 	let commonId = await unix.getCommonGid()
 
 	for (let path of snootOwnedPaths) {
-		await fs.chmod(path, 0o755)
+		await fs.chmod(path, 0o750)
 	}
 
 	await fs.chmod(authorizedKeysPath, 0o644)
