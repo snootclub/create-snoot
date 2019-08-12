@@ -30,6 +30,16 @@ async function getAuthorizedKeys (snoot) {
 	return fs.readFile(authorizedKeysPath, "utf-8")
 }
 
+async function linkHome (snoot) {
+	let home = homeResolver(snoot).path
+	if (!fs.pathExists(home)) {
+			await unix.ln({
+				from: home,
+				to: resolver("snoot").path
+			})
+	}
+}
+
 async function fixSshPermissions (snoot) {
 	let snootHomeResolver = homeResolver(snoot)
 	let snootResolver = resolver(snoot)
@@ -65,16 +75,10 @@ async function fixSshPermissions (snoot) {
 }
 
 async function createUnixAccount (snoot) {
-	let homeDirectory =  homeResolver(snoot).path
-	await unix.createUser({
+	return unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
-		homeDirectory
-	})
-
-	await unix.ln({
-		from: homeDirectory,
-		to: resolver("snoot").path
+		homeDirectory: homeResolver(snoot).path
 	})
 }
 
@@ -144,5 +148,6 @@ module.exports = {
 	getNames,
 	demandExistence,
 	createBareRepo,
-	getAuthorizedKeys
+	getAuthorizedKeys,
+	linkHome
 }
