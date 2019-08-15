@@ -10,7 +10,7 @@ exports.files = {
 	".gitconfig" (snoot) {
 		return `[user]
 name = ${snoot}
-email ${snoot}@snoot.club`
+email = ${snoot}@snoot.club`
 	},
 	application: {
 		boops: {
