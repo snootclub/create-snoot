@@ -5,31 +5,30 @@ let shell = require("./shell.js")
 let skeletons = require("./skeletons.js")
 let {shout} = require("./loggo.js")
 
+let gitRootResolver = createResolver("/mnt/extra-goose/git")
 let rootResolver = createResolver("/www/snoot.club")
 let resolver = rootResolver("snoots")
 
 let validNameRegex = /^[a-z][a-z0-9]{0,30}$/
 
-let validateName = snoot =>
-	validNameRegex.test(snoot)
+let validateName = snoot => validNameRegex.test(snoot)
 
 let applicationResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", ...paths)
 
-let repoResolver = (snoot, ...paths) =>
-	resolver(snoot, "repo", ...paths)
+let repoResolver = snoot => resolver(snoot, "git")
 
 let websiteResolver = (snoot, ...paths) =>
 	resolver(snoot, "application", "website", ...paths)
 
-async function getAuthorizedKeys (snoot) {
+async function getAuthorizedKeys(snoot) {
 	let snootResolver = resolver(snoot)
 	let sshDirectoryResolver = snootResolver(".ssh")
 	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
 	return fs.readFile(authorizedKeysPath, "utf-8")
 }
 
-async function fixSshPermissions (snoot) {
+async function fixSshPermissions(snoot) {
 	let snootResolver = resolver(snoot)
 	let sshDirectoryResolver = snootResolver(".ssh")
 	let authorizedKeysPath = sshDirectoryResolver("authorized_keys").path
@@ -37,7 +36,7 @@ async function fixSshPermissions (snoot) {
 	let snootOwnedPaths = [
 		sshDirectoryResolver.path,
 		authorizedKeysPath,
-		snootResolver.path
+		snootResolver.path,
 	]
 
 	let snootId = await unix.getUserId(snoot)
@@ -54,58 +53,50 @@ async function fixSshPermissions (snoot) {
 	}
 }
 
-async function createUnixAccount (snoot) {
+async function createUnixAccount(snoot) {
 	return unix.createUser({
 		user: snoot,
 		groups: [unix.commonGroupName, unix.lowerGroupName],
-		homeDirectory: createResolver("/")("snoots", snoot).path
+		homeDirectory: createResolver("/")("snoots", snoot).path,
 	})
 }
 
-async function createBareRepo (snoot) {
-	let snootRepoResolver = repoResolver(snoot)
-	await shell.run(`git init --bare ${snootRepoResolver.path}`)
+async function createRepository(snoot) {
+	let snootGitPath = resolver(snoot)("git").path
+	let gitSnootPath = gitRootResolver(snoot).path
+	await fs.mkdir(gitSnootPath)
 	await unix.chown({
 		user: await unix.getUserId(snoot),
 		group: await unix.getCommonGid(),
-		path: snootRepoResolver.path,
-		recurse: true
+		path: gitSnootPath,
+		recurse: true,
+	})
+	await unix.ln({
+		to: gitSnootPath,
+		from: snootGitPath,
 	})
 }
 
-async function createBaseApplication (snoot, data) {
+async function createBase(snoot, data) {
 	await skeletons.write({
 		resolver: resolver(snoot),
 		uid: await unix.getUserId(snoot),
 		gid: await unix.getCommonGid(),
 		render: compile => compile(snoot, data),
-		getPermissions ({filePath, fileType}) {
-			if (fileType == skeletons.fileTypes.file) {
-				let rwxr_xr_x = 0o755
-				let postReceive = repoResolver(snoot, "hooks", "post-receive").path
-				if (filePath == postReceive) {
-					return {
-						mode: rwxr_xr_x
-					}
-				}
-			}
-		}
 	})
 }
 
-async function getNames () {
+async function getNames() {
 	let files = await fs.readdir(resolver.path)
-	return files.filter(name =>
-		validateName(name)
-	)
+	return files.filter(name => validateName(name))
 }
 
-async function checkExists (snoot) {
+async function checkExists(snoot) {
 	let names = await getNames()
 	return names.includes(snoot)
 }
 
-async function demandExistence (snoot) {
+async function demandExistence(snoot) {
 	let names = await getNames()
 
 	if (!names.includes(snoot)) {
@@ -120,12 +111,12 @@ module.exports = {
 	applicationResolver,
 	websiteResolver,
 	createUnixAccount,
-	createBaseApplication,
+	createBase,
 	fixSshPermissions,
 	checkExists,
 	validateName,
 	getNames,
 	demandExistence,
-	createBareRepo,
-	getAuthorizedKeys
+	createRepository,
+	getAuthorizedKeys,
 }

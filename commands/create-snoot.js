@@ -127,11 +127,11 @@ module.exports = async function createSnoot () {
 			})
 	}
 
-	log("creating a bare git repo for them to live at /repo")
-	await snoots.createBareRepo(snoot)
+	log("generating their base files! 📠 🎰")
+	await snoots.createBase(snoot, {authorizedKeys})
 
-	log("generating their base application files! 📠 🎰")
-	await snoots.createBaseApplication(snoot, {authorizedKeys})
+	log("creating a git folder for them")
+	await snoots.createRepository(snoot)
 
 	log("fixing ssh permssions")
 	await snoots.fixSshPermissions(snoot)

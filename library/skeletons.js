@@ -1,5 +1,4 @@
 let fs = require("fs-extra")
-let os = require("os")
 let inquirer = require("inquirer")
 
 exports.files = {
@@ -12,14 +11,6 @@ exports.files = {
 		return `[user]
 name = ${snoot}
 email ${snoot}@snoot.club`
-	},
-	repo: {
-		hooks: {
-			"post-receive" () {
-				return `#!/bin/sh
-npx @snootclub/post-receive`
-			}
-		}
 	},
 	application: {
 		boops: {
@@ -112,14 +103,23 @@ module.exports = (request, response) =>
 	Welcome to ${snoot}'s homepage
 </h1>
 
+<h2>getting started:</h2>
+
 <p>
 	if you are <strong>${snoot}</strong>, you can now ssh or ftp into your account!
+</p>
+
+<p>
+	if you want to host a webpage, put files in the directory
+	<code>application/website</code>
 </p>
 
 <p>
 	the page you are reading right now is the file located at
 	<code>./application/website/index.html</code>
 </p>
+
+<h2>advanced users:</h2>
 
 <p>
 	the start script in your <code>package.json</code> will be run automatically.
@@ -129,10 +129,6 @@ module.exports = (request, response) =>
 	<code>./application/website</code> and apps in
 	<code>./application/boops</code> using <a
 	href="https://github.com/snootclub/boop">boops</a>.
-</p>
-
-<p>
-	i promise that's cool and fun
 </p>
 `
 			}
@@ -156,8 +152,7 @@ exports.write = async function write (options) {
 		render,
 		files = exports.files,
 		uid,
-		gid,
-		getPermissions = () => ({uid, gid, mode})
+		gid
 	} = options
 
 	for (let [key, value] of Object.entries(files)) {
@@ -167,7 +162,6 @@ exports.write = async function write (options) {
 			: fileTypes.directory
 
 		let filePath = fileResolver.path
-		let permissions = getPermissions({filePath, fileType}) || {}
 
 		out:
 		if (fileType == fileTypes.file) { // if this is a file node
@@ -185,12 +179,14 @@ exports.write = async function write (options) {
 				}
 			}
 			await fs.outputFile(filePath, render(fileCreator))
-			await fs.chmod(filePath, permissions.mode || 0o644)
+			let rw_r__r__ = 0o644
+			await fs.chmod(filePath,  rw_r__r__)
 		} else {
 			// this is a directory node
 			let files = value
+			let rwxrwxr_x = 0o775
 			await fs.mkdirp(filePath)
-			await fs.chmod(filePath, permissions.mode || 0o775)
+			await fs.chmod(filePath, rwxrwxr_x)
 			await write(merge(options, {
 				resolver: fileResolver,
 				files
@@ -199,8 +195,8 @@ exports.write = async function write (options) {
 
 		await fs.chown(
 			filePath,
-			permissions.uid || uid,
-			permissions.gid || gid
+			uid,
+			gid
 		)
 	}
 }
