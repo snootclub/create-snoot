@@ -26,7 +26,8 @@ exports.getUserId = snoot => {
 
 exports.getCommonGid = () => {
 	try {
-		return userid.gid(unix.commonGroupName)
+		// TODO lol `(getent group common).split(:).2`
+		return 1473
 	} catch (error) {
 		return undefined
 	}
