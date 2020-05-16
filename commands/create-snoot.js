@@ -136,8 +136,8 @@ module.exports = async function createSnoot () {
 	log("fixing ssh permssions")
 	await snoots.fixSshPermissions(snoot)
 
-	log("running nginx refresh script 🔂")
-	await shell.run("/www/snoot.club/scripts/refresh.zsh /www/snoot.club/")
+	log("generating nginx config for user")
+	await shell.run(`/www/snoot.club/scripts/generate-snoot-config.zsh ${snoot}`)
 }
 
 let beingRunDirectly = process.argv[1].match(/create-snoot($|\.js$)/)

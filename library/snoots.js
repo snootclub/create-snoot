@@ -14,12 +14,12 @@ let validNameRegex = /^[a-z][a-z0-9]{0,30}$/
 let validateName = snoot => validNameRegex.test(snoot)
 
 let applicationResolver = (snoot, ...paths) =>
-	resolver(snoot, "application", ...paths)
+	resolver(snoot, `${snoot}.snoot.club`, ...paths)
 
 let repoResolver = snoot => resolver(snoot, "git")
 
 let websiteResolver = (snoot, ...paths) =>
-	resolver(snoot, "application", "website", ...paths)
+	resolver(snoot, `${snoot}.snoot.club`, "website", ...paths)
 
 async function getAuthorizedKeys(snoot) {
 	let snootResolver = resolver(snoot)
