@@ -1,7 +1,5 @@
 let shell = require("./shell.js")
 let fs = require("fs-extra")
-let userid = require("userid")
-
 let unix = exports
 
 exports.commonGroupName = "common"
@@ -13,7 +11,7 @@ exports.checkYourPrivilege = function () {
 
 exports.getUserId = snoot => {
 	try {
-		return userid.uid(snoot)
+		return shell.run(`id -u ${snoot}`)
 	} catch (error) {
 		return undefined
 	}
