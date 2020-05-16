@@ -12,9 +12,12 @@ exports.checkYourPrivilege = function () {
 
 exports.getUserId = snoot => {
 	try {
+		let uid = ""
 		let cmd = shell.run(`id -u ${snoot}`)
+		cmd.stdout.on("data", d => uid += d)
 		return cmd.then(() => {
-			return parseInt(cmd.stdout, 10)
+			let number = parseInt(uid, 10)
+			return Number.isNaN(number) ? undefined : number
 		})
 	} catch (error) {
 		return undefined
